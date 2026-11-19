@@ -1,2 +1,13 @@
 # omorfi-chat-ai
-ómorfi ai — chat with different AI characters.
+
+A polished, responsive character chat website.
+
+## Run locally
+
+Open `index.html` directly in a browser, or serve the directory:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then visit http://localhost:8000.

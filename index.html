@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ómorfi ai — Chat with AI characters</title>
+  <meta name="description" content="A beautiful place to discover and chat with AI characters." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #182127;
+      --muted: #738086;
+      --line: #e8ece9;
+      --cream: #fbfaf7;
+      --green: #1f8a64;
+      --mint: #edf7f1;
+      --panel: #ffffff;
+      --shadow: 0 18px 50px rgba(31, 58, 45, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", sans-serif;
+      color: var(--ink);
+      background: var(--cream);
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
+    .sidebar {
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column;
+      padding: 26px 18px 18px;
+      background: rgba(255,255,255,.82);
+      border-right: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+      z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 0 10px 27px; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: linear-gradient(145deg, #2da875, #176c50);
+      color: white; font: 800 20px "Manrope";
+      box-shadow: 0 8px 18px rgba(31,138,100,.22);
+    }
+    .brand-name { font: 800 21px "Manrope"; letter-spacing: -.7px; }
+
+    .new-chat {
+      width: 100%; height: 48px; border: 0; border-radius: 13px;
+      background: var(--ink); color: white; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      box-shadow: 0 8px 20px rgba(24,33,39,.12);
+    }
+    .plus { width: 21px; height: 21px; border: 1.5px solid rgba(255,255,255,.65); border-radius: 50%; display:grid; place-items:center; font-size:17px; }
+
+    .nav { margin-top: 20px; display: grid; gap: 5px; }
+    .nav-item {
+      height: 44px; border: 0; border-radius: 11px; background: transparent;
+      color: #69756f; display: flex; align-items: center; gap: 12px;
+      padding: 0 12px; text-align:left; font-weight:600;
+    }
+    .nav-item.active { background: var(--mint); color: #287458; }
+    .nav-icon { width:18px; height:18px; opacity:.85; }
+
+    .profile {
+      margin-top: auto; display:flex; align-items:center; gap:10px;
+      padding: 12px 8px 2px; border-top:1px solid var(--line);
+    }
+    .profile-avatar { width:38px;height:38px;border-radius:50%;background:#dfeadd;display:grid;place-items:center;font-weight:700;color:#50705d; }
+    .profile-text { flex:1; }
+    .profile-name { font-size:14px;font-weight:700; }
+    .profile-plan { font-size:12px;color:var(--muted);margin-top:2px; }
+
+    main { min-width:0; }
+    .topbar {
+      height: 82px; display:flex; align-items:center; justify-content:flex-end;
+      padding:0 42px; border-bottom:1px solid rgba(232,236,233,.75);
+      background:rgba(251,250,247,.86); backdrop-filter:blur(12px);
+      position:sticky; top:0; z-index:8;
+    }
+    .top-actions { display:flex;align-items:center;gap:10px; }
+    .icon-button { width:42px;height:42px;border:1px solid var(--line);border-radius:50%;background:white;color:#69756f;display:grid;place-items:center; }
+
+    .content { max-width: 1120px; margin:0 auto; padding: 46px 42px 70px; }
+    .hero { display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:30px; }
+    .eyebrow { color:var(--green);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px; }
+    h1 { margin:0;font:800 42px/1.08 "Manrope";letter-spacing:-2px; }
+    .hero-sub { margin:9px 0 0;color:var(--muted);font-size:15px; }
+
+    .search {
+      width: 260px; height:48px; display:flex;align-items:center;gap:10px;
+      padding:0 15px;border:1px solid var(--line);border-radius:13px;background:white;
+      box-shadow:0 7px 22px rgba(31,58,45,.04);
+    }
+    .search input { width:100%;border:0;outline:0;background:transparent;color:var(--ink); }
+    .search input::placeholder { color:#a1aaa6; }
+
+    .filters { display:flex;gap:8px;margin:0 0 25px;overflow-x:auto; }
+    .filter { border:1px solid var(--line);background:white;color:#6d7773;border-radius:999px;padding:9px 15px;font-weight:700;font-size:13px;white-space:nowrap; }
+    .filter.active { border-color:#244b3d;background:#244b3d;color:white; }
+
+    .characters { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px; }
+    .character-card {
+      position:relative; min-height:260px; border:1px solid var(--line);border-radius:18px;
+      background:var(--panel); overflow:hidden; box-shadow:0 10px 30px rgba(31,58,45,.045);
+      transition:.22s ease;
+    }
+    .character-card:hover { transform:translateY(-4px);box-shadow:var(--shadow); }
+    .card-art { height:142px;position:relative;overflow:hidden; }
+    .card-art::before,.card-art::after { content:"";position:absolute;border-radius:50%; }
+    .art-green { background:linear-gradient(135deg,#b9d8bf,#edf3da); }
+    .art-blue { background:linear-gradient(135deg,#c8dae4,#e5eef1); }
+    .art-peach { background:linear-gradient(135deg,#efd2ba,#f5ead7); }
+    .art-lilac { background:linear-gradient(135deg,#d1c7df,#eee6f2); }
+    .art-gold { background:linear-gradient(135deg,#d8c99c,#eee7c8); }
+    .art-coral { background:linear-gradient(135deg,#e5b7a7,#f2ddd1); }
+
+    .portrait { position:absolute; left:50%;bottom:-28px;transform:translateX(-50%);width:118px;height:118px;border-radius:50% 50% 43% 43%;border:6px solid rgba(255,255,255,.8);box-shadow:0 10px 25px rgba(42,54,48,.12); }
+    .p-green { background:radial-gradient(circle at 50% 32%,#6d4837 0 18%,transparent 19%),linear-gradient(145deg,#9d7458 0 47%,#4a6957 48%); }
+    .p-blue { background:radial-gradient(circle at 50% 32%,#6f5147 0 18%,transparent 19%),linear-gradient(145deg,#b19a78 0 47%,#56798a 48%); }
+    .p-peach { background:radial-gradient(circle at 50% 32%,#d7b18c 0 18%,transparent 19%),linear-gradient(145deg,#f1cfb2 0 47%,#a96c52 48%); }
+    .p-lilac { background:radial-gradient(circle at 50% 32%,#4d3c34 0 18%,transparent 19%),linear-gradient(145deg,#a98875 0 47%,#6e5a82 48%); }
+    .p-gold { background:radial-gradient(circle at 50% 32%,#af8060 0 18%,transparent 19%),linear-gradient(145deg,#cfa77f 0 47%,#a69b5c 48%); }
+    .p-coral { background:radial-gradient(circle at 50% 32%,#4c352d 0 18%,transparent 19%),linear-gradient(145deg,#bf9275 0 47%,#b66e5b 48%); }
+
+    .card-body { padding:20px 20px 18px; }
+    .card-name-row { display:flex;align-items:center;justify-content:space-between; }
+    .card-name { font:800 18px "Manrope";letter-spacing:-.4px; }
+    .status { width:8px;height:8px;border-radius:50%;background:#55ba7e;box-shadow:0 0 0 3px #edf7f0; }
+    .card-desc { min-height:38px;margin:7px 0 15px;color:var(--muted);font-size:13px;line-height:1.45; }
+    .card-footer { display:flex;align-items:center;justify-content:space-between; }
+    .tag { font-size:11px;font-weight:800;color:#607166;background:#f0f4f1;border-radius:999px;padding:6px 9px; }
+    .chat-button { width:38px;height:38px;border:0;border-radius:50%;background:var(--ink);color:white;display:grid;place-items:center;transition:.18s; }
+    .chat-button:hover { background:var(--green);transform:scale(1.05); }
+
+    .chat-overlay { display:none;position:fixed;inset:0;background:rgba(24,33,39,.24);backdrop-filter:blur(7px);z-index:30;align-items:center;justify-content:center;padding:20px; }
+    .chat-overlay.open { display:flex; }
+    .chat-window { width:min(560px,100%);height:min(680px,88vh);background:white;border-radius:22px;box-shadow:0 30px 90px rgba(24,33,39,.25);display:flex;flex-direction:column;overflow:hidden; }
+    .chat-header { height:74px;padding:0 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line); }
+    .chat-avatar { width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dde9e0;font-size:20px; }
+    .chat-meta { flex:1; }
+    .chat-meta strong { display:block;font:800 16px "Manrope"; }
+    .chat-meta span { color:#68a17e;font-size:12px;font-weight:700; }
+    .close-chat { width:36px;height:36px;border:0;border-radius:50%;background:#f3f5f3;color:#6d7773;font-size:20px; }
+    .messages { flex:1;padding:22px;overflow-y:auto;background:#fcfdfb; }
+    .message { max-width:78%;margin-bottom:12px;padding:12px 14px;border-radius:14px;font-size:14px;line-height:1.45; }
+    .message.ai { background:#edf4ef;border-bottom-left-radius:4px; }
+    .message.user { margin-left:auto;background:var(--ink);color:white;border-bottom-right-radius:4px; }
+    .composer { padding:14px;border-top:1px solid var(--line);display:flex;gap:8px; }
+    .composer input { flex:1;height:48px;border:1px solid var(--line);border-radius:13px;padding:0 14px;outline:none; }
+    .composer input:focus { border-color:#77b59a; }
+    .send { width:48px;border:0;border-radius:13px;background:var(--green);color:white;font-size:20px; }
+
+    @media (max-width:980px) {
+      .app { grid-template-columns:78px minmax(0,1fr); }
+      .sidebar { padding:22px 12px;align-items:center; }
+      .brand { padding:0 0 27px; }.brand-name,.nav-item span,.profile-text { display:none; }
+      .new-chat { width:48px; }.new-chat .button-label { display:none; }
+      .nav { width:48px; }.nav-item { justify-content:center;padding:0; }
+      .profile { border:0;padding:0; }.profile-avatar { width:42px;height:42px; }
+      .characters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:650px) {
+      .app { display:block; }
+      .sidebar { position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;height:70px;display:flex;flex-direction:row;justify-content:center;padding:8px 12px;border-right:0;border-top:1px solid var(--line); }
+      .brand,.new-chat,.profile { display:none; }.nav { margin:0;display:flex;gap:8px;width:auto; }.nav-item { width:44px;height:44px; }.nav-item:nth-child(n+4) { display:none; }
+      .topbar { height:64px;padding:0 20px; }.content { padding:30px 20px 100px; }
+      .hero { align-items:flex-start; }.hero-sub { max-width:260px; }.search { display:none; }
+      h1 { font-size:34px; }.characters { grid-template-columns:1fr; }.character-card { min-height:250px; }
+      .top-actions .icon-button:first-child { display:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">o</div><div class="brand-name">ómorfi ai</div></div>
+      <button class="new-chat" id="newChat"><span class="plus">+</span><span class="button-label">New chat</span></button>
+      <nav class="nav">
+        <button class="nav-item active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg><span>Discover</span></button>
+        <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/></svg><span>Chats</span></button>
+        <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.35-7-10a4 4 0 017-2.65A4 4 0 0119 11c0 5.65-7 10-7 10z"/></svg><span>Favorites</span></button>
+        <button class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.88l.06.06-1.82 1.82-.06-.06A1.7 1.7 0 0016 18.36a1.7 1.7 0 00-1 .64l-.1.09V21h-2.58v-.91l-.1-.09A1.7 1.7 0 0011 19.36a1.7 1.7 0 00-1.88.34l-.06.06-1.82-1.82.06-.06A1.7 1.7 0 007.64 16a1.7 1.7 0 00-.64-1H6v-2.58h1l.64-.1A1.7 1.7 0 008.28 11a1.7 1.7 0 00-.34-1.88l-.06-.06L9.7 7.24l.06.06A1.7 1.7 0 0011.64 7a1.7 1.7 0 001-.64V6h2.58v.36l.1.09A1.7 1.7 0 0016.44 7a1.7 1.7 0 001.88-.34l.06-.06 1.82 1.82-.06.06A1.7 1.7 0 0019.36 10a1.7 1.7 0 00.64 1H21v2.58h-.91l-.09.1A1.7 1.7 0 0019.36 15z"/></svg><span>Settings</span></button>
+      </nav>
+      <div class="profile"><div class="profile-avatar">A</div><div class="profile-text"><div class="profile-name">Aynur</div><div class="profile-plan">Free plan</div></div></div>
+    </aside>
+
+    <main>
+      <header class="topbar"><div class="top-actions"><button class="icon-button" aria-label="Notifications">♢</button><button class="icon-button" aria-label="Menu">•••</button></div></header>
+      <div class="content">
+        <section class="hero">
+          <div><div class="eyebrow">Explore</div><h1>Discover characters</h1><p class="hero-sub">Find someone new to talk to.</p></div>
+          <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#98a29e" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="search" type="search" placeholder="Search characters" /></label>
+        </section>
+        <div class="filters"><button class="filter active" data-filter="All">All</button><button class="filter" data-filter="Fantasy">Fantasy</button><button class="filter" data-filter="Companions">Companions</button><button class="filter" data-filter="Learning">Learning</button><button class="filter" data-filter="Wellness">Wellness</button></div>
+        <section class="characters" id="characters"></section>
+      </div>
+    </main>
+  </div>
+
+  <div class="chat-overlay" id="chatOverlay"><div class="chat-window">
+    <div class="chat-header"><div class="chat-avatar" id="chatAvatar">🌿</div><div class="chat-meta"><strong id="chatName">Character</strong><span>● Online</span></div><button class="close-chat" id="closeChat" aria-label="Close">×</button></div>
+    <div class="messages" id="messages"><div class="message ai" id="welcome">Hello! I'm here to chat. What would you like to talk about?</div></div>
+    <form class="composer" id="composer"><input id="messageInput" autocomplete="off" placeholder="Write a message..." /><button class="send" type="submit" aria-label="Send">➤</button></form>
+  </div></div>
+
+  <script>
+    const characters = [
+      { name:'Lyra', category:'Fantasy', tag:'Storyteller', desc:'A curious elven archivist who remembers every forgotten tale.', art:'green', portrait:'p-green', emoji:'🌿' },
+      { name:'Atlas', category:'Learning', tag:'Study buddy', desc:'A patient guide for questions, ideas, and ambitious goals.', art:'blue', portrait:'p-blue', emoji:'🧭' },
+      { name:'Mika', category:'Companions', tag:'Warm friend', desc:'A thoughtful companion for easy conversation and good humor.', art:'peach', portrait:'p-peach', emoji:'☀️' },
+      { name:'Seren', category:'Wellness', tag:'Life coach', desc:'A calm listener who helps you slow down and find clarity.', art:'lilac', portrait:'p-lilac', emoji:'🌙' },
+      { name:'Orion', category:'Fantasy', tag:'Space guide', desc:'A gentle explorer traveling beyond the edges of the known.', art:'gold', portrait:'p-gold', emoji:'✨' },
+      { name:'Nova', category:'Companions', tag:'Creative soul', desc:'A bright collaborator for art, writing, and new possibilities.', art:'coral', portrait:'p-coral', emoji:'🎨' }
+    ];
+
+    const grid = document.getElementById('characters');
+    function render(items) {
+      grid.innerHTML = items.map((c,i) => `
+        <article class="character-card" data-name="${c.name}" data-category="${c.category}">
+          <div class="card-art art-${c.art}"><div class="portrait ${c.portrait}"></div></div>
+          <div class="card-body">
+            <div class="card-name-row"><div class="card-name">${c.name}</div><div class="status"></div></div>
+            <p class="card-desc">${c.desc}</p>
+            <div class="card-footer"><span class="tag">${c.tag}</span><button class="chat-button" aria-label="Chat with ${c.name}" data-index="${characters.indexOf(c)}">➤</button></div>
+          </div>
+        </article>`).join('');
+      document.querySelectorAll('.chat-button').forEach(button => button.addEventListener('click', () => openChat(characters[Number(button.dataset.index)])));
+    }
+    render(characters);
+
+    let activeFilter = 'All';
+    function applyFilters() {
+      const query = document.getElementById('search').value.trim().toLowerCase();
+      render(characters.filter(c => (activeFilter === 'All' || c.category === activeFilter) && (c.name.toLowerCase().includes(query) || c.desc.toLowerCase().includes(query) || c.tag.toLowerCase().includes(query))));
+    }
+    document.getElementById('search').addEventListener('input', applyFilters);
+    document.querySelectorAll('.filter').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
+      button.classList.add('active'); activeFilter = button.dataset.filter; applyFilters();
+    }));
+
+    const overlay = document.getElementById('chatOverlay');
+    function openChat(character) {
+      document.getElementById('chatName').textContent = character.name;
+      document.getElementById('chatAvatar').textContent = character.emoji;
+      document.getElementById('welcome').textContent = `Hello! I'm ${character.name}. ${character.desc} What would you like to talk about?`;
+      document.getElementById('messages').innerHTML = '<div class="message ai">' + document.getElementById('welcome').textContent + '</div>';
+      overlay.classList.add('open');
+      document.getElementById('messageInput').focus();
+    }
+    document.getElementById('closeChat').addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', e => { if(e.target === overlay) overlay.classList.remove('open'); });
+    document.getElementById('newChat').addEventListener('click', () => openChat(characters[0]));
+
+    document.getElementById('composer').addEventListener('submit', e => {
+      e.preventEvent;
+    });
+    document.getElementById('composer').addEventListener('submit', e => {
+      e.preventDefault();
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if(!text) return;
+      const messages = document.getElementById('messages');
+      messages.insertAdjacentHTML('beforeend', '<div class="message user"></div>');
+      messages.lastElementChild.textContent = text;
+      input.value = '';
+      setTimeout(() => {
+        const name = document.getElementById('chatName').textContent;
+        messages.insertAdjacentHTML('beforeend', '<div class="message ai"></div>');
+        messages.lastElementChild.textContent = `I like the direction of that thought. Tell me more, and we can explore it together.`;
+        messages.scrollTop = messages.scrollHeight;
+      }, 650);
+      messages.scrollTop = messages.scrollHeight;
+    });
+  </script>
+</body>
+</html>
